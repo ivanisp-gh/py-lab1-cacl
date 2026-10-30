@@ -98,12 +98,20 @@ def weight_main(data: list) -> list:
 
 
 #converter result
-def convert(line: str) -> str:
+def convert(line: str, to_unit: str | None = None) -> str:
     line = type_line(line)
     if line[0]=='length':
         result = length_main(line)
+        units = ['mm', 'cm', 'm', 'km']
     if line[0]=='temp':
         result = temp_main(line)
+        units = ['c', 'f', 'k']
     if line[0]=='weight':
         result = weight_main(line)
+        units = ['g', 'kg']
+    if to_unit is not None:
+        target = to_unit.strip().lower()
+        if target not in units:
+            raise ValueError('Неверное значение')
+        return result[units.index(target)]
     return ' - '.join(result)

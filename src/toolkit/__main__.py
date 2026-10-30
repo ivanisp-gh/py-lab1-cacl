@@ -10,8 +10,8 @@ def main() -> None:
 
     if not argv or argv[0] == "--help":
         print("Использование: python -m toolkit <команда> [аргументы]")
-        print("Команды: calc EXPRESSION | convert VALUE | --help")
-        print("Пример: python -m toolkit convert 80mm")
+        print("Команды: calc EXPRESSION | convert VALUE --from UNIT --to UNIT | --help")
+        print("Пример: python -m toolkit convert 80 --from mm --to cm")
         sys.exit(0)
 
     command = argv[0]
@@ -28,14 +28,26 @@ def main() -> None:
         elif command == "convert":
             if not args:
                 raise ToolkitError("Укажите значение для convert")
-            value_with_unit = args[0]
-            result = convert(value_with_unit)
+            if "--from" in args and "--to" in args:
+                try:
+                    from_idx = args.index("--from")
+                    to_idx = args.index("--to")
+                    from_unit = args[from_idx + 1]
+                    to_unit = args[to_idx + 1]
+                    used = {from_idx, from_idx + 1, to_idx, to_idx + 1}
+                    value = [a for i, a in enumerate(args) if i not in used][0]
+                except IndexError:
+                    raise ToolkitError("Использование: convert VALUE --from UNIT --to UNIT")
+                result = convert(f"{value}{from_unit}", to_unit)
+            else:
+                value_with_unit = args[0]
+                result = convert(value_with_unit)
             print(result)
 
         else:
             raise ToolkitError(f"Неизвестная команда: {command}")
 
-    except ToolkitError as error:
+    except (ToolkitError, ValueError) as error:
         print(f"Ошибка: {error}", file=sys.stderr)
         sys.exit(2)
 
